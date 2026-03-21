@@ -1,0 +1,87 @@
+Suma wszystkich elementów: 4759.58
+Pojemność plecaka: 2500.0
+
+URUCHOMIENIE 1
+Suma w plecaku: 2499.69
+Przeładowany: False
+Róznica: 0.31
+Liczba wybranych elementów: 56
+Iteracje: 117
+----------------------------------------
+URUCHOMIENIE 2
+Suma w plecaku: 2499.49
+Przeładowany: False
+Róznica: 0.51
+Liczba wybranych elementów: 53
+Iteracje: 187
+----------------------------------------
+URUCHOMIENIE 3
+Suma w plecaku: 2498.69
+Przeładowany: False
+Róznica: 1.31
+Liczba wybranych elementów: 53
+Iteracje: 118
+----------------------------------------
+URUCHOMIENIE 4
+Suma w plecaku: 2499.1
+Przeładowany: False
+Róznica: 0.9
+Liczba wybranych elementów: 55
+Iteracje: 297
+----------------------------------------
+URUCHOMIENIE 5
+Suma w plecaku: 2499.3
+Przeładowany: False
+Róznica: 0.7
+Liczba wybranych elementów: 57
+Iteracje: 242
+----------------------------------------
+URUCHOMIENIE 6
+Suma w plecaku: 2498.77
+Przeładowany: False
+Róznica: 1.23
+Liczba wybranych elementów: 55
+Iteracje: 137
+----------------------------------------
+URUCHOMIENIE 7
+Suma w plecaku: 2499.21
+Przeładowany: False
+Róznica: 0.79
+Liczba wybranych elementów: 52
+Iteracje: 133
+----------------------------------------
+URUCHOMIENIE 8
+Suma w plecaku: 2497.35
+Przeładowany: False
+Róznica: 2.65
+Liczba wybranych elementów: 51
+Iteracje: 133
+----------------------------------------
+URUCHOMIENIE 9
+Suma w plecaku: 2499.76
+Przeładowany: False
+Róznica: 0.24
+Liczba wybranych elementów: 52
+Iteracje: 106
+----------------------------------------
+URUCHOMIENIE 10
+Suma w plecaku: 2499.74
+Przeładowany: False
+Róznica: 0.26
+Liczba wybranych elementów: 51
+Iteracje: 156
+----------------------------------------
+
+NAJLEPSZY WYNIK Z 10 URUCHOMIEŃ
+Suma w plecaku: 2499.76
+Przeładowany: False
+Różnica: 0.24
+Liczba wybranych elementów: 52
+
+ŚREDNIE Z 10 URUCHOMIEŃ
+Średnia suma w plecaku: 2499.11
+Średnia różnica: 0.89
+Min różnica: 0.24
+Max różnica: 2.65
+Średnia liczba wybranych elementów: 53.5
+Średnia liczba iteracji: 162.6
