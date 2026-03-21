@@ -24,3 +24,10 @@ Go to the selected task folder and run the Python file:
 
 ```bash
 python 01_knapsack_problem/knapsack_problem.py
+```
+## Progress
+
+- [x] Knapsack problem
+- [ ] 
+- [ ] 
+- [ ] 
