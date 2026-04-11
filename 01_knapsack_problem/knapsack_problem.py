@@ -1,201 +1,134 @@
 import random
 
-LICZBA_ELEMENTOW = 100
-MIN_WARTOSC = 10.0
-MAX_WARTOSC = 90.0
-POJEMNOSC = 2500.0
+POJEMNOSC = 250.0
+LICZBA_PRZEDMIOTOW = 100
+ZIARNO_PRZEDMIOTOW = 12345
+LICZBA_PRZEBIEGOW = 10
+MAKS_NIEUDANYCH_PROB = 100
+PROG_ADAPTACYJNY = 20
 
-MAX_ITERACJI = 1000
-MAX_NIEUDANYCH_PROB = 100
-LICZBA_URUCHOMIEN = 10
+def generuj_przedmioty(n, ziarno):
+    generator_losowy = random.Random(ziarno)
+    przedmioty = [round(generator_losowy.uniform(1.0, 10.0), 2) for _ in range(n)]
 
-def generuj_elementy(n, min_v, max_v):
-    return [random.uniform(min_v, max_v) for _ in range(n)]
+    if sum(przedmioty) <= POJEMNOSC:
+        raise ValueError("Ograniczenie nie spełnione: suma objętości przedmiotów musi być > 250.")
 
-def losowy_osobnik(n):
-    return [random.randint(0, 1) for _ in range(n)]
+    return przedmioty
 
-def suma_plecaka(osobnik, elementy):
-    suma = 0.0
-    for gen, wartosc in zip(osobnik, elementy):
-        if gen == 1:
-            suma += wartosc 
-    return suma
+def losowe_rozwiazanie(n, generator_losowy):
+    return [generator_losowy.randint(0, 1) for _ in range(n)]
 
-def ocena(osobnik, elementy, pojemnosc):
-    suma = suma_plecaka(osobnik, elementy)
 
-    if suma <= pojemnosc:
-        przeladowany = False
-        roznica = pojemnosc - suma
+def oceniaj(rozwiazanie, przedmioty):
+    return sum(bit * objetosc for bit, objetosc in zip(rozwiazanie, przedmioty))
+
+
+def mutuj(rozwiazanie, generator_losowy, nieudane_proby):
+    dziecko = rozwiazanie[:]
+    n = len(rozwiazanie)
+
+    if nieudane_proby > PROG_ADAPTACYJNY:
+        k = generator_losowy.choice([2, 3])
     else:
-        przeladowany = True
-        roznica = suma - pojemnosc
-    return suma, przeladowany, roznica
+        k = 1
 
-def czy_potomek_lepszy(rodzic, potomek, elementy, pojemnosc):
-    suma_r, przel_r, roznica_r = ocena(rodzic, elementy, pojemnosc)
-    suma_p, przel_p, roznica_p = ocena(potomek, elementy, pojemnosc)
+    indeksy = generator_losowy.sample(range(n), k)
+    for indeks in indeksy:
+        dziecko[indeks] = 1 - dziecko[indeks]
 
-    if przel_r and not przel_p:
+    return dziecko
+
+
+def czy_lepsze(objetosc_rodzica, objetosc_dziecka, pojemnosc):
+    rodzic_wykonalny = objetosc_rodzica <= pojemnosc
+    dziecko_wykonalne = objetosc_dziecka <= pojemnosc
+    if (not rodzic_wykonalny) and dziecko_wykonalne:
         return True
+    if rodzic_wykonalny and dziecko_wykonalne and objetosc_dziecka > objetosc_rodzica:
+        return True
+    if (not rodzic_wykonalny) and (not dziecko_wykonalne):
+        nadmiar_rodzica = objetosc_rodzica - pojemnosc
+        nadmiar_dziecka = objetosc_dziecka - pojemnosc
+        if nadmiar_dziecka < nadmiar_rodzica:
+            return True
+    return False
 
-    if not przel_r and przel_p:
-        return False
-    
-    if not przel_r and not przel_p:
-        return roznica_p < roznica_r
 
-    return roznica_p < roznica_r
+def uruchom_es_1plus1(przedmioty, pojemnosc, ziarno_przebiegu):
+    generator_losowy = random.Random(ziarno_przebiegu)
 
-def mutacja_jednego_bitu(osobnik):
-    potomek = osobnik.copy()
-    indeks = random.randint(0, len(potomek) - 1)
+    rodzic = losowe_rozwiazanie(len(przedmioty), generator_losowy)
+    objetosc_rodzica = oceniaj(rodzic, przedmioty)
 
-    if potomek[indeks] == 0:
-        potomek[indeks] = 1
-    else:
-        potomek[indeks] = 0
-    return potomek
-
-def mutacja_podwojna(osobnik):
-    potomek = osobnik.copy()
-    indeksy = random.sample(range(len(potomek)), 2)
-    for indeks in indeksy:
-        potomek[indeks] = 1 - potomek[indeks]
-    return potomek
-
-def mutacja_potrojna(osobnik):
-    potomek = osobnik.copy()
-    indeksy = random.sample(range(len(potomek)), 3)
-    for indeks in indeksy:
-        potomek[indeks] = 1 - potomek[indeks]
-    return potomek
-
-def algorytm_ewolucyjny(elementy, pojemnosc, max_iteracji, max_nieudanych_prob):
-    rodzic = losowy_osobnik(len(elementy))
-
-    najlepszy = rodzic.copy()
-    iteracje = 0
     nieudane_proby = 0
+    iteracje = 0
 
-    mutacje = [mutacja_jednego_bitu, mutacja_podwojna, mutacja_potrojna]
+    while nieudane_proby < MAKS_NIEUDANYCH_PROB:
+        iteracje += 1
 
-    while iteracje < max_iteracji and nieudane_proby < max_nieudanych_prob:
-        mutacja = random.choice(mutacje)
-        potomek = mutacja(rodzic)
+        dziecko = mutuj(rodzic, generator_losowy, nieudane_proby)
+        objetosc_dziecka = oceniaj(dziecko, przedmioty)
 
-        if czy_potomek_lepszy(rodzic, potomek, elementy, pojemnosc):
-            rodzic = potomek
+        if czy_lepsze(objetosc_rodzica, objetosc_dziecka, pojemnosc):
+            rodzic = dziecko
+            objetosc_rodzica = objetosc_dziecka
             nieudane_proby = 0
         else:
             nieudane_proby += 1
-        
-        if czy_potomek_lepszy(najlepszy, rodzic, elementy, pojemnosc):
-            najlepszy = rodzic.copy()
 
-        iteracje += 1
-    
-    suma, przeladowany, roznica = ocena(najlepszy, elementy, pojemnosc)
+    status = "Wykonalne" if objetosc_rodzica <= pojemnosc else "Przeładowane"
 
     return {
-        "najlepszy_osobnik": najlepszy,
-        "suma": suma, 
-        "przeladowany": przeladowany,
-        "roznica": roznica,
+        "ostateczna_objetosc": round(objetosc_rodzica, 2),
         "iteracje": iteracje,
-        "nieudane_proby": nieudane_proby,
-        "liczba_wybranych": sum(najlepszy)
-
+        "status": status
     }
 
-def wykonaj_10_uruchomien():
-    elementy = generuj_elementy(LICZBA_ELEMENTOW, MIN_WARTOSC, MAX_WARTOSC)
-    suma_wszystkich = sum(elementy)
-    print("Suma wszytskich elementów:", round(suma_wszystkich, 2))
-    print("Pojemność plecaka:", POJEMNOSC)
-    print()
 
+def glowna():
+    przedmioty = generuj_przedmioty(LICZBA_PRZEDMIOTOW, ZIARNO_PRZEDMIOTOW)
+
+    print("STAŁE OBJĘTOŚCI PRZEDMIOTÓW:")
+    print(przedmioty)
+    print("\nCałkowita suma wszystkich objętości przedmiotów:", round(sum(przedmioty), 2))
+    print("Sprawdzenie ograniczenia (suma > 250):", sum(przedmioty) > POJEMNOSC)
+    print("-" * 70)
     wyniki = []
 
-    for i in range(LICZBA_URUCHOMIEN):
-        wynik = algorytm_ewolucyjny(
-            elementy,
-            POJEMNOSC,
-            MAX_ITERACJI,
-            MAX_NIEUDANYCH_PROB
-        )
+    for id_przebiegu in range(1, LICZBA_PRZEBIEGOW + 1):
+        # Różne ziarno dla mutacji / inicjalizacji w każdym przebiegu
+        ziarno_przebiegu = 1000 + id_przebiegu
+
+        wynik = uruchom_es_1plus1(przedmioty, POJEMNOSC, ziarno_przebiegu)
         wyniki.append(wynik)
 
-        print(f"URUCHOMIENIE {i + 1}")
-        print("Suma w plecaku:", round(wynik["suma"], 2))
-        print("Przeładowany:", wynik["przeladowany"])
-        print("Róznica:", round(wynik["roznica"], 2))
-        print("Liczba wybranych elementów:", wynik["liczba_wybranych"])
-        print("Iteracje:", wynik["iteracje"])
-        print("-" * 40)
+        print(f"PRZEBIEG {id_przebiegu}")
+        print(f"Ostateczna całkowita objętość: {wynik['ostateczna_objetosc']}")
+        print(f"Liczba iteracji: {wynik['iteracje']}")
+        print(f"Status: {wynik['status']}")
+        print("-" * 70)
 
-    najlepszy_wynik = wyniki[0]
-    for wynik in wyniki[1:]:
-        if czy_potomek_lepszy(
-            najlepszy_wynik["najlepszy_osobnik"],
-            wynik["najlepszy_osobnik"],
-            elementy,
-            POJEMNOSC
-        ):
-            najlepszy_wynik = wynik
-    print()
-    print("NAJLEPSZY WYNIK Z 10 URUCHOMIEŃ")
-    print("Suma w plecaku:", round(najlepszy_wynik["suma"], 2))
-    print("Przeładowany:", najlepszy_wynik["przeladowany"])
-    print("Różnica:", round(najlepszy_wynik["roznica"], 2))
-    print("Liczba wybranych elementów:", najlepszy_wynik["liczba_wybranych"])
-    print()
+    print("\nPODSUMOWANIE WSZYSTKICH 10 PRZEBIEGÓW")
+    print("{:<6} {:<18} {:<15} {:<12}".format("Przebieg", "Ostateczna objętość", "Iteracje", "Status"))
+    print("-" * 60)
 
-    # Obliczanie średnich
-    srednia_suma = sum(w["suma"] for w in wyniki) / len(wyniki)
-    srednia_roznica = sum(w["roznica"] for w in wyniki) / len(wyniki)
-    srednia_liczba_wybranych = sum(w["liczba_wybranych"] for w in wyniki) / len(wyniki)
-    srednia_iteracje = sum(w["iteracje"] for w in wyniki) / len(wyniki)
-    min_roznica = min(w["roznica"] for w in wyniki)
-    max_roznica = max(w["roznica"] for w in wyniki)
+    for i, wynik in enumerate(wyniki, start=1):
+        print("{:<6} {:<18} {:<15} {:<12}".format(
+            i,
+            wynik["ostateczna_objetosc"],
+            wynik["iteracje"],
+            wynik["status"]
+        ))
 
-    print("ŚREDNIE Z 10 URUCHOMIEŃ")
-    print("Średnia suma w plecaku:", round(srednia_suma, 2))
-    print("Średnia różnica:", round(srednia_roznica, 2))
-    print("Min różnica:", round(min_roznica, 2))
-    print("Max różnica:", round(max_roznica, 2))
-    print("Średnia liczba wybranych elementów:", round(srednia_liczba_wybranych, 2))
-    print("Średnia liczba iteracji:", round(srednia_iteracje, 2))
+    najlepsze_wykonalne = [w for w in wyniki if w["status"] == "Wykonalne"]
+    if najlepsze_wykonalne:
+        najlepsze = max(najlepsze_wykonalne, key=lambda x: x["ostateczna_objetosc"])
+        print("\nNajlepsze wykonalne rozwiązanie:")
+        print(najlepsze)
+    else:
+        print("\nNie znaleziono wykonalnego rozwiązania w żadnym przebiegu.")
 
-    with open("wyniki_plecaka.txt", "w") as f:
-        f.write(f"Suma wszystkich elementów: {round(suma_wszystkich, 2)}\n")
-        f.write(f"Pojemność plecaka: {POJEMNOSC}\n\n")
-        
-        for i, wynik in enumerate(wyniki, 1):
-            f.write(f"URUCHOMIENIE {i}\n")
-            f.write(f"Suma w plecaku: {round(wynik['suma'], 2)}\n")
-            f.write(f"Przeładowany: {wynik['przeladowany']}\n")
-            f.write(f"Róznica: {round(wynik['roznica'], 2)}\n")
-            f.write(f"Liczba wybranych elementów: {wynik['liczba_wybranych']}\n")
-            f.write(f"Iteracje: {wynik['iteracje']}\n")
-            f.write("-" * 40 + "\n")
-        
-        f.write("\nNAJLEPSZY WYNIK Z 10 URUCHOMIEŃ\n")
-        f.write(f"Suma w plecaku: {round(najlepszy_wynik['suma'], 2)}\n")
-        f.write(f"Przeładowany: {najlepszy_wynik['przeladowany']}\n")
-        f.write(f"Różnica: {round(najlepszy_wynik['roznica'], 2)}\n")
-        f.write(f"Liczba wybranych elementów: {najlepszy_wynik['liczba_wybranych']}\n\n")
-        
-        f.write("ŚREDNIE Z 10 URUCHOMIEŃ\n")
-        f.write(f"Średnia suma w plecaku: {round(srednia_suma, 2)}\n")
-        f.write(f"Średnia różnica: {round(srednia_roznica, 2)}\n")
-        f.write(f"Min różnica: {round(min_roznica, 2)}\n")
-        f.write(f"Max różnica: {round(max_roznica, 2)}\n")
-        f.write(f"Średnia liczba wybranych elementów: {round(srednia_liczba_wybranych, 2)}\n")
-        f.write(f"Średnia liczba iteracji: {round(srednia_iteracje, 2)}\n")
-    
-    print("\nWyniki zostały zapisane do pliku 'wyniki_plecaka.txt'")
 
 if __name__ == "__main__":
-    wykonaj_10_uruchomien()
+    glowna()
