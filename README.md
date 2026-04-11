@@ -15,7 +15,9 @@ The repository is being developed gradually and includes algorithmic problems, i
   - `output.txt` – example output/results
   - `README.md` – description of the processor scheduling task and how to run it
 - `03_asymmetric_traveling_salesman_problem/`
-  - `README.md` – placeholder and description for the Asymmetric Traveling Salesman Problem (ATSP)
+  - `atsp.py` – Python implementation for the Asymmetric Traveling Salesman Problem (ATSP)
+  - `atsp_results.txt` – example summary of ATSP run results
+  - `README.md` – description of the ATSP task and how to run it
 
 ## Purpose
 
@@ -31,10 +33,12 @@ Go to the selected task folder and run the Python file:
 
 ```bash
 python 01_knapsack_problem/knapsack_problem.py
+python 02_task_allocation_in_multi-processor_system/task_allocation.py
+python 03_asymmetric_traveling_salesman_problem/atsp.py
 ```
 ## Progress
 
 - [x] Knapsack problem
 - [x] Task allocation in multi-processor system
-- [ ] 
-- [ ] 
+- [x] Asymmetric Traveling Salesman Problem (ATSP)
+- [ ] Additional advanced algorithms
