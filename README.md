@@ -31,6 +31,6 @@ python 01_knapsack_problem/knapsack_problem.py
 ## Progress
 
 - [x] Knapsack problem
-- [x] Task allocationin multi-processor system
+- [x] Task allocation in multi-processor system
 - [ ] 
 - [ ] 
